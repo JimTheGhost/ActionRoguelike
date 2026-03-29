@@ -1,0 +1,69 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "ARLAttributeComponent.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, UARLAttributeComponent*, OwningComp, float, NewHealth, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnRageChanged, AActor*, InstigatorActor, UARLAttributeComponent*, OwningComp, float, NewRage, float, Delta);
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class ACTIONROGUELIKE_API UARLAttributeComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:	
+	// Sets default values for this component's properties
+	UARLAttributeComponent();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
+	UPROPERTY(BlueprintAssignable)
+	FOnRageChanged OnRageChanged;
+	
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool ApplyHealthChange(float Delta, AActor* InstigatorActor);
+	
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool ApplyRageChange(float Delta, AActor* InstigatorActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool IsAlive() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool IsFullHealth() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static UARLAttributeComponent* GetAttributes(AActor* FromActor);
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static bool IsActorAlive(AActor* TargetActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes|Health")
+	bool Kill(AActor* Instigator);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes|Health")
+	float GetMaxHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes|Health")
+	float GetCurrentHealth() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Attributes|Rage")
+	float GetMaxRage() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes|Rage")
+	float GetCurrentRage() const;
+	
+	
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes|Status")
+	float CurrentHealth;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	float MaxHealth;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes|Status")
+	float CurrentRage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	float MaxRage;
+};
