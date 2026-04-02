@@ -125,6 +125,6 @@ void UARLInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
     	
     	if (APawn* MyPawn = Cast<APawn>(GetOwner()))
     	{
-    		IARLGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
+    		IARLGameplayInterface::Execute_Interact(InFocus, MyPawn);
     	}
 }

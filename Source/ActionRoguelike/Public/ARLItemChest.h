@@ -21,7 +21,13 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Lid Mechanism")
 	float TargetPitch;
-
+protected:
+	UPROPERTY(ReplicatedUsing="OnRep_ToggleChest", BlueprintReadOnly)
+	bool bLidOpen;
+	
+	UFUNCTION()
+	void OnRep_ToggleChest();
+	
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* BaseMeshComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);

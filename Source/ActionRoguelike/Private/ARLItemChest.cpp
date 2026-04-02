@@ -2,6 +2,7 @@
 
 
 #include "ARLItemChest.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AARLItemChest::AARLItemChest()
@@ -16,10 +17,24 @@ AARLItemChest::AARLItemChest()
 	LidMeshComp->SetupAttachment(BaseMeshComp);
 
 	TargetPitch = 110;
+	
+	bReplicates = true;
 }
 
 void AARLItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	LidMeshComp->SetRelativeRotation(FRotator(TargetPitch, 0, 0));
+	bLidOpen = !bLidOpen;
+	OnRep_ToggleChest();
 }
 
+void AARLItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(AARLItemChest, bLidOpen);
+}
+void AARLItemChest::OnRep_ToggleChest()
+ {		
+	float CurrentPitch = bLidOpen ? TargetPitch:0;
+	LidMeshComp->SetRelativeRotation(FRotator(CurrentPitch, 0, 0));
+ }
