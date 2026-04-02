@@ -27,6 +27,8 @@ void UARLInteractionComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+
+
 void UARLInteractionComponent::FindBestInteractable()
 {
 	bool bDrawDebug = CVarEnableInteractDebug.GetValueOnGameThread();
@@ -101,22 +103,28 @@ void UARLInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	FindBestInteractable();
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (MyPawn->IsLocallyControlled())
+	{
+		FindBestInteractable();
+	}
 }
 
 void UARLInteractionComponent::PrimaryInteract()
 {
-	if (FocusedActor == nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Interact: No Actor Found"));
-		return;
-	}
-	
-	if (APawn* MyPawn = Cast<APawn>(GetOwner()))
-	{
-		IARLGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
-	}
+	ServerInteract(FocusedActor);
 }
 
-
+void UARLInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
+{
+		if (InFocus == nullptr)
+    	{
+    		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Interact: No Actor Found"));
+    		return;
+    	}
+    	
+    	if (APawn* MyPawn = Cast<APawn>(GetOwner()))
+    	{
+    		IARLGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
+    	}
+}

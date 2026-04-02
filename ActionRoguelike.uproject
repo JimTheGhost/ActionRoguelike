@@ -26,7 +26,12 @@
 		},
 		{
 			"Name": "LevelPrototyping",
-			"Enabled": true
+			"Enabled": false
+		},
+		{
+			"Name": "DarkerNodes",
+			"Enabled": false,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/4b3441f0228a40ec9ca986489a5bd682"
 		}
 	],
 	"AdditionalPluginDirectories": [
