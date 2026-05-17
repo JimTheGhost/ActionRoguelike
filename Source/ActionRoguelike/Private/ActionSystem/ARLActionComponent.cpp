@@ -57,6 +57,11 @@ bool UARLActionComponent::StartActionByName(AActor* Instigator, FName ActionName
 				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, DebugString);
 				continue;
 			}
+			
+			if (!GetOwner()->HasAuthority())
+			{
+				ServerStartAction(Instigator, ActionName);
+			}
 			Action->StartAction(Instigator);
 			return true;
 		}
@@ -90,6 +95,11 @@ bool UARLActionComponent::DoesActionExist(TSubclassOf<UARLAction> ActionClass)
 		}
 	}
 	return false;
+}
+
+void UARLActionComponent::ServerStartAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StartActionByName(Instigator, ActionName);
 }
 
 void UARLActionComponent::BeginPlay()

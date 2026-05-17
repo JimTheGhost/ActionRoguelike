@@ -5,6 +5,7 @@
 
 #include "ARLGameModeBase.h"
 #include "Blueprint/UserWidget.h"
+#include "Net/UnrealNetwork.h"
 
 static TAutoConsoleVariable<float> CVarGlobalDamageMultiplier(TEXT("arl.GDamageMult"), 1.0f, TEXT("Multiply all damage done by input"));
 
@@ -19,6 +20,8 @@ UARLAttributeComponent::UARLAttributeComponent()
 	MaxHealth = 100;
 	CurrentRage = 0;
 	MaxRage = 100;
+	
+	SetIsReplicatedByDefault(true);
 }
 
 //Action Functions
@@ -44,7 +47,10 @@ bool UARLAttributeComponent::ApplyHealthChange(float Delta, AActor* InstigatorAc
 
 	//broadcast health change to delegates
 	float ActualDelta = CurrentHealth - OldHealth;
-	OnHealthChanged.Broadcast(InstigatorActor, this, CurrentHealth, ActualDelta);
+	//OnHealthChanged.Broadcast(InstigatorActor, this, CurrentHealth, ActualDelta);
+	//if (ActualDelta != 0.0f){
+	MulticastHealthChanged(InstigatorActor, CurrentHealth, ActualDelta);
+	//}
 
 	//Check if dead and report to game mode
 	if (ActualDelta < 0.0f && CurrentHealth <= 0.0f)
@@ -62,8 +68,12 @@ bool UARLAttributeComponent::ApplyRageChange(float Delta, AActor* InstigatorActo
 {
 	float OldRage = CurrentRage;
 	CurrentRage = FMath::Clamp(CurrentRage + Delta, 0, MaxRage);
-	OnRageChanged.Broadcast(InstigatorActor, this, CurrentRage, Delta);
 	float ActualDelta = CurrentRage - OldRage;
+	//OnRageChanged.Broadcast(InstigatorActor, this, CurrentRage, ActualDelta);
+	if (ActualDelta != 0.0f)
+	{
+		MulticastRageChanged(InstigatorActor, CurrentRage, ActualDelta);
+	}
 	return true;
 }
 
@@ -113,6 +123,17 @@ float UARLAttributeComponent::GetCurrentRage() const
 	return CurrentRage;
 }
 
+void UARLAttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewRage, float Delta)
+{
+	OnRageChanged.Broadcast(InstigatorActor, this, NewRage, Delta);
+}
+
+void UARLAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth,
+                                                                   float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
+}
+
 UARLAttributeComponent* UARLAttributeComponent::GetAttributes(AActor* FromActor)
 {
 	if (FromActor == nullptr)
@@ -120,4 +141,14 @@ UARLAttributeComponent* UARLAttributeComponent::GetAttributes(AActor* FromActor)
 		return nullptr;
 	}
 	return FromActor->FindComponentByClass<UARLAttributeComponent>();
+}
+
+void UARLAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(UARLAttributeComponent, CurrentHealth);
+	DOREPLIFETIME(UARLAttributeComponent, MaxHealth);
+	DOREPLIFETIME(UARLAttributeComponent, CurrentRage);
+	DOREPLIFETIME(UARLAttributeComponent, MaxRage);
 }

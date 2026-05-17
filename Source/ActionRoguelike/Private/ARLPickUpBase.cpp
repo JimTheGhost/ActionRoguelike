@@ -15,6 +15,7 @@ AARLPickUpBase::AARLPickUpBase()
 	RespawnDelay = 10.0f;
 	bRespawnable = true;
 
+	SetReplicates(true);
 }
 
 void AARLPickUpBase::DisablePickup(bool bRespawn)
