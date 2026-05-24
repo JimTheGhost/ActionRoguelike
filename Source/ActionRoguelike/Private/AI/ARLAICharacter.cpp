@@ -51,15 +51,7 @@ void AARLAICharacter::SetTargetActor(AActor* TargetActor)
 		if (CurrentTarget != TargetActor)
 		{
 			MyController->GetBlackboardComponent()->SetValueAsObject("TargetActor", TargetActor);
-			if (ActiveDetectionWidget == nullptr)
-			{
-				ActiveDetectionWidget = CreateWidget<UARLWorldUserWidget>(GetWorld(), DetectionWidgetClass);
-				if (ActiveDetectionWidget)
-				{
-					ActiveDetectionWidget->AttachedActor = this;
-					ActiveDetectionWidget->AddToViewport();
-				}
-			}
+			CreateDetectionWidget();
 		}
 	}
 }
@@ -118,6 +110,19 @@ void AARLAICharacter::OnHealthChange(AActor* InstigatorActor, UARLAttributeCompo
 void AARLAICharacter::OnPawnSeen(APawn* Pawn)
 {
 	SetTargetActor(Pawn);
+}
+
+void AARLAICharacter::CreateDetectionWidget_Implementation()
+{
+	if (ActiveDetectionWidget == nullptr)
+	{
+		ActiveDetectionWidget = CreateWidget<UARLWorldUserWidget>(GetWorld(), DetectionWidgetClass);
+		if (ActiveDetectionWidget)
+		{
+			ActiveDetectionWidget->AttachedActor = this;
+			ActiveDetectionWidget->AddToViewport();
+		}
+	}
 }
 
 

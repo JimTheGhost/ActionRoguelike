@@ -68,6 +68,7 @@ protected:
 
 	UFUNCTION()
 	void OnHealthChange(AActor* InstigatorActor, UARLAttributeComponent* OwningComp, float NewHealth, float Delta);
+	
 public:
 
 	// Called to bind functionality to input

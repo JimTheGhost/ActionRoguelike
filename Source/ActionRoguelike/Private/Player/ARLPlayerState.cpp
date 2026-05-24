@@ -3,6 +3,8 @@
 
 #include "Player/ARLPlayerState.h"
 
+#include "Net/UnrealNetwork.h"
+
 int32 AARLPlayerState::GetCredits() const
 {
 	return Credits;
@@ -28,4 +30,10 @@ bool AARLPlayerState::CanAfford(int32 Cost)
 		return true;
 	}
 	return false;
+}
+
+void AARLPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AARLPlayerState, Credits);
 }

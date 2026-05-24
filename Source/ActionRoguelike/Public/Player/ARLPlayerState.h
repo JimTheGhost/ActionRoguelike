@@ -17,11 +17,10 @@ class ACTIONROGUELIKE_API AARLPlayerState : public APlayerState
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Inventory|Currency")
+	UPROPERTY(EditDefaultsOnly, Replicated, BlueprintReadWrite, Category = "Inventory|Currency")
 	int32 Credits;
 	
 	public:
-	
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Currency")
 	int32 GetCredits() const;
 	

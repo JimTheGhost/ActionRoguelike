@@ -47,10 +47,9 @@ bool UARLAttributeComponent::ApplyHealthChange(float Delta, AActor* InstigatorAc
 
 	//broadcast health change to delegates
 	float ActualDelta = CurrentHealth - OldHealth;
-	//OnHealthChanged.Broadcast(InstigatorActor, this, CurrentHealth, ActualDelta);
-	//if (ActualDelta != 0.0f){
-	MulticastHealthChanged(InstigatorActor, CurrentHealth, ActualDelta);
-	//}
+	if (ActualDelta != 0.0f){
+		MulticastHealthChanged(InstigatorActor, CurrentHealth, ActualDelta);
+	}
 
 	//Check if dead and report to game mode
 	if (ActualDelta < 0.0f && CurrentHealth <= 0.0f)
@@ -69,7 +68,7 @@ bool UARLAttributeComponent::ApplyRageChange(float Delta, AActor* InstigatorActo
 	float OldRage = CurrentRage;
 	CurrentRage = FMath::Clamp(CurrentRage + Delta, 0, MaxRage);
 	float ActualDelta = CurrentRage - OldRage;
-	//OnRageChanged.Broadcast(InstigatorActor, this, CurrentRage, ActualDelta);
+
 	if (ActualDelta != 0.0f)
 	{
 		MulticastRageChanged(InstigatorActor, CurrentRage, ActualDelta);

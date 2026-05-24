@@ -31,4 +31,6 @@ public:
 	virtual void EnablePickup();
 	
 	virtual void Interact_Implementation(APawn* InstigatorPawn);
+	
+protected:
 };
