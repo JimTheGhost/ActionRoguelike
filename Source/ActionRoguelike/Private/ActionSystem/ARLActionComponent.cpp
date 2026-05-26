@@ -3,11 +3,42 @@
 
 #include "ActionSystem/ARLActionComponent.h"
 
+#include "ActionRoguelike/ActionRoguelike.h"
 #include "ActionSystem/ARLAction.h"
+#include "Engine/ActorChannel.h"
+#include "Net/UnrealNetwork.h"
 
 UARLActionComponent::UARLActionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	
+	SetIsReplicatedByDefault(true);
+}
+
+void UARLActionComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	if (GetOwner()->HasAuthority())
+	{
+		for ( TSubclassOf<UARLAction> ActionClass : DefaultActions)
+		{
+			AddAction(GetOwner(), ActionClass);
+		}
+	}
+}
+
+bool UARLActionComponent::ReplicateSubobjects(UActorChannel* Channel, class FOutBunch* Bunch,
+	FReplicationFlags* RepFlags)
+{
+	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+	for (UARLAction* Action : Actions)
+	{
+		if (Action)
+		{
+			WroteSomething |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
+		}
+	}
+	return WroteSomething;
 }
 
 void UARLActionComponent::AddAction(AActor* Instigator, TSubclassOf<UARLAction> ActionClass)
@@ -102,16 +133,6 @@ void UARLActionComponent::ServerStartAction_Implementation(AActor* Instigator, F
 	StartActionByName(Instigator, ActionName);
 }
 
-void UARLActionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	for ( TSubclassOf<UARLAction> ActionClass : DefaultActions)
-	{
-		AddAction(GetOwner(), ActionClass);
-	}
-}
-
-
 // Called every frame
 void UARLActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -119,5 +140,27 @@ void UARLActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 	//FString DebugString = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
 	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Cyan, DebugString);
+	
+	for (UARLAction* Action : Actions)
+	{
+		FColor TextColor = FColor::Blue;
+		
+		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s : IsRunning: %s : Outer: %s"), 
+			*GetNameSafe(GetOwner()), 
+			*Action->ActionName.ToString(), 
+			Action->IsRunning() ? TEXT("True") : TEXT("False"), 
+			*GetNameSafe(GetOuter()));
+		if (Action->IsRunning())
+		{
+			LogOnScreen(this, ActionMsg, TextColor, 0.0f);
+		}
+	}
+}
+
+void UARLActionComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(UARLActionComponent, Actions);
 }
 

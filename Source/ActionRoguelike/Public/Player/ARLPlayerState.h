@@ -22,9 +22,6 @@ protected:
 	
 	public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Currency")
-	int32 GetCredits() const;
-	
-	UFUNCTION(BlueprintCallable, Category = "Inventory|Currency")
 	bool UpdateCredits(int32 Delta);
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory|Currency")
@@ -32,4 +29,7 @@ protected:
 	
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnCreditsChanged OnCreditsChanged;
+	
+	UFUNCTION(NetMulticast, Unreliable)
+	void OnCreditsChangedMulticast(AARLPlayerState* PlayerState, int32 NewCredits, int32 Delta);
 };

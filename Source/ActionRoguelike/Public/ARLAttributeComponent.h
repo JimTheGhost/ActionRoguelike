@@ -7,7 +7,6 @@
 #include "ARLAttributeComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAttributeChanged, AActor*, InstigatorActor, UARLAttributeComponent*, OwningComp, float, NewValue, float, Delta);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnRageChanged, AActor*, InstigatorActor, UARLAttributeComponent*, OwningComp, float, NewValue, float, Delta);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROGUELIKE_API UARLAttributeComponent : public UActorComponent

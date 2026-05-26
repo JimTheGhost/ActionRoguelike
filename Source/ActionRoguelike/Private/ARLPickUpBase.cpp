@@ -22,9 +22,9 @@ void AARLPickUpBase::DisablePickup(bool bRespawn)
 {
 	BaseMesh->SetVisibility(false);
 	SetActorEnableCollision(false);
-	if (bRespawn)
+	if (bRespawn && HasAuthority())
 	{
-		GetWorldTimerManager().SetTimer(RespawnTimerHandle,this,&AARLPickUpBase::EnablePickup,RespawnDelay);
+		GetWorldTimerManager().SetTimer(RespawnTimerHandle,this,&AARLPickUpBase::EnablePickupMulticast,RespawnDelay);
 	}
 }
 
@@ -37,6 +37,16 @@ void AARLPickUpBase::EnablePickup()
 void AARLPickUpBase::Interact_Implementation(APawn* InstigatorPawn)
 {
 	IARLGameplayInterface::Interact_Implementation(InstigatorPawn);
-	DisablePickup(bRespawnable);
+	DisablePickupMulticast(bRespawnable);
+}
+
+void AARLPickUpBase::DisablePickupMulticast_Implementation(bool bRespawn)
+{
+	DisablePickup(bRespawn);
+}
+
+void AARLPickUpBase::EnablePickupMulticast_Implementation()
+{
+	EnablePickup();
 }
 

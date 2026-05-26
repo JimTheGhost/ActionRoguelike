@@ -43,11 +43,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<UARLAction>> DefaultActions;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<UARLAction*> Actions;
 	
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	virtual bool ReplicateSubobjects(UActorChannel* Channel, class FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
 
 public:	
 	// Called every frame

@@ -33,4 +33,8 @@ public:
 	virtual void Interact_Implementation(APawn* InstigatorPawn);
 	
 protected:
+	UFUNCTION(NetMulticast, Unreliable)
+	void DisablePickupMulticast(bool bRespawn);
+	UFUNCTION(NetMulticast, Unreliable)
+	void EnablePickupMulticast();
 };

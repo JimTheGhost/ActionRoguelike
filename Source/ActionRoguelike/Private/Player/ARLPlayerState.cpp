@@ -5,11 +5,6 @@
 
 #include "Net/UnrealNetwork.h"
 
-int32 AARLPlayerState::GetCredits() const
-{
-	return Credits;
-}
-
 bool AARLPlayerState::UpdateCredits(int32 Delta)
 {
 	int32 NewCredits = Credits + Delta;
@@ -19,7 +14,10 @@ bool AARLPlayerState::UpdateCredits(int32 Delta)
 	}
 	Credits = NewCredits;
 	
-	OnCreditsChanged.Broadcast(this, Credits, Delta);
+	if (HasAuthority())
+	{
+		OnCreditsChangedMulticast(this, NewCredits, Delta);
+	}
 	return true;
 }
 
@@ -32,8 +30,17 @@ bool AARLPlayerState::CanAfford(int32 Cost)
 	return false;
 }
 
+void AARLPlayerState::OnCreditsChangedMulticast_Implementation(AARLPlayerState* PlayerState, int32 NewCredits,
+	int32 Delta)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnCreditsChangedMulticast — Role: %d, NewCredits: %d"),
+	(int32)GetLocalRole(), NewCredits);
+	OnCreditsChanged.Broadcast(this, NewCredits, Delta);
+}
+
 void AARLPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
 	DOREPLIFETIME(AARLPlayerState, Credits);
 }

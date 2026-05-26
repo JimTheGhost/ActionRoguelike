@@ -28,7 +28,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Cost")
 	float ResourceCost;
 
+	UPROPERTY(ReplicatedUsing="OnRep_IsRunning")
 	bool bIsRunning;
+	
+	UFUNCTION()
+	void OnRep_IsRunning();
 
 	public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Actions")
@@ -48,4 +52,9 @@ protected:
 	bool IsRunning() const;
 	
 	UWorld* GetWorld() const override;
+	
+	bool IsSupportedForNetworking() const override
+	{
+		return true;
+	}
 };
