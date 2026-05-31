@@ -61,11 +61,14 @@ void UARLAction_ProjectileAttackBase::StartAction_Implementation(AActor* Instiga
 
 		UGameplayStatics::SpawnEmitterAttached(CastEmitter, Character->GetMesh(),SpawnSocket, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 
-		FTimerHandle AttackDelay_Handle;
-		FTimerDelegate Delegate;
+		if (Character->HasAuthority())
+		{
+			FTimerHandle AttackDelay_Handle;
+			FTimerDelegate Delegate;
 		
-		Delegate.BindUFunction(this, "AttackDelay_Elapsed", Character);
-		GetWorld()->GetTimerManager().SetTimer(AttackDelay_Handle, Delegate, AttackTiming, false);
+			Delegate.BindUFunction(this, "AttackDelay_Elapsed", Character);
+			GetWorld()->GetTimerManager().SetTimer(AttackDelay_Handle, Delegate, AttackTiming, false);
+		}
 	}
 
 }

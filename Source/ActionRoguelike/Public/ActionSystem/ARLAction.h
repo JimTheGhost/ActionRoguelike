@@ -8,6 +8,18 @@
 #include "ARLAction.generated.h"
 
 class UWorld;
+
+USTRUCT()
+struct FActionRepData
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY()
+	bool bIsRunning;
+	UPROPERTY()
+	AActor* Instigator;
+};
 /**
  * 
  */
@@ -16,6 +28,9 @@ class ACTIONROGUELIKE_API UARLAction : public UObject
 {
 	GENERATED_BODY()
 protected:
+	UPROPERTY(Replicated)
+	UARLActionComponent* ActionComp;
+	
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	UARLActionComponent* GetOwningComponent() const;
 	
@@ -28,13 +43,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Cost")
 	float ResourceCost;
 
-	UPROPERTY(ReplicatedUsing="OnRep_IsRunning")
-	bool bIsRunning;
+	UPROPERTY(ReplicatedUsing="OnRep_RepData")
+	FActionRepData RepData;
 	
 	UFUNCTION()
-	void OnRep_IsRunning();
+	void OnRep_RepData();
 
 	public:
+	void Initialize(UARLActionComponent* NewActionComponent);
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Actions")
 	bool bAutoStart;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Actions")

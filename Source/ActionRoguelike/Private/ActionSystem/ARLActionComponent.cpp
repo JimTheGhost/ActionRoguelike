@@ -48,10 +48,17 @@ void UARLActionComponent::AddAction(AActor* Instigator, TSubclassOf<UARLAction> 
 		return;
 	}
 	
+	if (!GetOwner()->HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Client attempting to AddAction. [Class: %s]"), *GetNameSafe(ActionClass))
+		return;
+	}
+	
 	UARLAction* NewAction = NewObject<UARLAction>(this, ActionClass);
 	
 	if (ensure(NewAction))
 	{
+		NewAction->Initialize(this);
 		Actions.Add(NewAction);
 		
 		if (NewAction->bAutoStart && ensure(NewAction->CanStart(Instigator)))
@@ -63,8 +70,11 @@ void UARLActionComponent::AddAction(AActor* Instigator, TSubclassOf<UARLAction> 
 
 void UARLActionComponent::RemoveAction(UARLAction* ActionClass)
 {	
-	if (!ensure(ActionClass && !ActionClass->IsRunning()))
-	Actions.Remove(ActionClass);
+	if (ensure(ActionClass && !ActionClass->IsRunning()))
+	{
+		Actions.Remove(ActionClass);
+	}
+
 }
 
 UARLActionComponent* UARLActionComponent::GetActionComponent(AActor* FromActor)
@@ -108,6 +118,10 @@ bool UARLActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 		{
 			if (Action->IsRunning())
 			{
+				if (!GetOwner()->HasAuthority())
+				{
+					ServerStopAction(Instigator, ActionName);
+				}
 				Action->StopAction(Instigator);
 				return true;
 			}
@@ -133,6 +147,11 @@ void UARLActionComponent::ServerStartAction_Implementation(AActor* Instigator, F
 	StartActionByName(Instigator, ActionName);
 }
 
+void UARLActionComponent::ServerStopAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StopActionByName(Instigator, ActionName);
+}
+
 // Called every frame
 void UARLActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -143,17 +162,12 @@ void UARLActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	
 	for (UARLAction* Action : Actions)
 	{
-		FColor TextColor = FColor::Blue;
+		FColor TextColor = Action->IsRunning()? FColor::Blue : FColor::White;
 		
-		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s : IsRunning: %s : Outer: %s"), 
+		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"), 
 			*GetNameSafe(GetOwner()), 
-			*Action->ActionName.ToString(), 
-			Action->IsRunning() ? TEXT("True") : TEXT("False"), 
-			*GetNameSafe(GetOuter()));
-		if (Action->IsRunning())
-		{
-			LogOnScreen(this, ActionMsg, TextColor, 0.0f);
-		}
+			*GetNameSafe(Action));
+		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
 	}
 }
 

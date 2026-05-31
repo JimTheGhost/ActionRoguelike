@@ -28,24 +28,20 @@ void AARLMagicProjectile::ProjectileOverlapDelegate(UPrimitiveComponent* Overlap
 		if (ActionComponent && ActionComponent->ActiveGameplayTags.HasTag(ParryTag))
 		{
 			MovementComp->Velocity = -MovementComp->Velocity;
-			SetInstigator(Cast<APawn>(OtherActor));
 			
-			UE_LOG(LogTemp, Log, TEXT("Parrying: %s, New Instigator: %s"), *GetNameSafe(OtherActor), *GetNameSafe(GetInstigator()));
+			SetInstigator(Cast<APawn>(OtherActor));
 			return;
 		}
-		UE_LOG(LogTemp, Log, TEXT("Hit On: %s"), *GetNameSafe(OtherActor));
+
 		if (UARLGameplayFunctionLibrary::ApplyDirectionDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
 			Explode();
 			
-			if (ActionComponent)
+			if (ActionComponent && HasAuthority())
 			{
 				ActionComponent->AddAction(GetInstigator(), OnHitEffect);
 			}
 		}
-	}else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Hit Ignored, Instigator: %s"), *GetNameSafe(GetInstigator()));
 	}
 }
 

@@ -8,10 +8,14 @@
 #include "ActionSystem/ARLActionComponent.h"
 #include "Net/UnrealNetwork.h"
 
+void UARLAction::Initialize(UARLActionComponent* NewActionComponent)
+{
+	ActionComp = NewActionComponent;
+}
+
 void UARLAction::StartAction_Implementation(AActor* Instigator)
 {
-	//UE_LOG(LogTemp, Log, TEXT("Running: %s"), *GetNameSafe(this));
-	LogOnScreen(this, FString::Printf(TEXT("Starting: %s"), *ActionName.ToString()), FColor::Green);
+	//LogOnScreen(this, FString::Printf(TEXT("Starting: %s"), *ActionName.ToString()), FColor::Green);
 	
 	UARLActionComponent* OwningComp = GetOwningComponent();
 	OwningComp->ActiveGameplayTags.AppendTags(GrantTags);
@@ -21,40 +25,42 @@ void UARLAction::StartAction_Implementation(AActor* Instigator)
 		UARLAttributeComponent::GetAttributes(OwningComp->GetOwner())->ApplyRageChange(-ResourceCost, Instigator);
 	}
 
-	bIsRunning = true;
+	RepData.bIsRunning = true;
+	RepData.Instigator = Instigator;
 }
 
 void UARLAction::StopAction_Implementation(AActor* Instigator)
 {
-	//UE_LOG(LogTemp, Log, TEXT("Stopping: %s"), *GetNameSafe(this));
-	LogOnScreen(this, FString::Printf(TEXT("Stopping: %s"), *ActionName.ToString()), FColor::White);
+	//LogOnScreen(this, FString::Printf(TEXT("Stopping: %s"), *ActionName.ToString()), FColor::White);
 	
 	UARLActionComponent* OwningComp = GetOwningComponent();
 	OwningComp->ActiveGameplayTags.RemoveTags(GrantTags);
 
-	bIsRunning = false;
+	RepData.bIsRunning = false;
+	RepData.Instigator = Instigator;
 }
 
 UARLActionComponent* UARLAction::GetOwningComponent() const
 {
-	return Cast<UARLActionComponent>(GetOuter());
+	return ActionComp;
+	//return Cast<UARLActionComponent>(GetOuter());
 }
 
-void UARLAction::OnRep_IsRunning()
+void UARLAction::OnRep_RepData()
 {
-//@FIXME: pass in proper instigator
-	if (bIsRunning)
+	if (RepData.bIsRunning)
 	{
-		StartAction(nullptr);
+		StartAction(RepData.Instigator);
 	}else
 	{
-		StopAction(nullptr);
+		StopAction(RepData.Instigator);
 	}
 }
 
+
 bool UARLAction::CanStart_Implementation(AActor* Instigator)
 {
-	if (bIsRunning)
+	if (RepData.bIsRunning)
 	{
 		return false;
 	}
@@ -76,7 +82,7 @@ bool UARLAction::CanStart_Implementation(AActor* Instigator)
 
 bool UARLAction::IsRunning() const
 {
-	return bIsRunning;
+	return RepData.bIsRunning;
 }
 
 UWorld* UARLAction::GetWorld() const
@@ -93,5 +99,6 @@ void UARLAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
-	DOREPLIFETIME(UARLAction, bIsRunning);
+	DOREPLIFETIME(UARLAction, RepData);
+	DOREPLIFETIME(UARLAction, ActionComp)
 }

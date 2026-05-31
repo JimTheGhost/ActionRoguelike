@@ -36,44 +36,52 @@ bool UARLAttributeComponent::ApplyHealthChange(float Delta, AActor* InstigatorAc
 	{
 		float DamageMultiplier = CVarGlobalDamageMultiplier.GetValueOnGameThread();
 		Delta *= DamageMultiplier;
-		ApplyRageChange(10, InstigatorActor);
 	}
 	
 	float OldHealth = CurrentHealth;
+	float NewHealth = FMath::Clamp(CurrentHealth + Delta, 0, MaxHealth);
+	float ActualDelta = NewHealth - OldHealth;
 	
-	//UE_LOG(LogTemp, Log, TEXT("Applying health change %f"), Delta);
-	CurrentHealth = FMath::Clamp(CurrentHealth + Delta, 0, MaxHealth);
-	//UE_LOG(LogTemp, Log, TEXT("New Health %f"), CurrentHealth);
-
-	//broadcast health change to delegates
-	float ActualDelta = CurrentHealth - OldHealth;
-	if (ActualDelta != 0.0f){
-		MulticastHealthChanged(InstigatorActor, CurrentHealth, ActualDelta);
-	}
-
-	//Check if dead and report to game mode
-	if (ActualDelta < 0.0f && CurrentHealth <= 0.0f)
+	if (GetOwner()->HasAuthority())
 	{
-		AARLGameModeBase* GM = GetWorld()->GetAuthGameMode<AARLGameModeBase>();
-		if (GM)
+		CurrentHealth = NewHealth;
+		
+		//broadcast health change to delegates
+		if (ActualDelta != 0.0f){
+			MulticastHealthChanged(InstigatorActor, CurrentHealth, ActualDelta);
+		}
+		
+		if (ActualDelta < 0.0f)
 		{
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
+			ApplyRageChange(10, InstigatorActor);
+			//Check if dead and report to game mode
+			if (CurrentHealth <= 0.0f)
+			{
+				AARLGameModeBase* GM = GetWorld()->GetAuthGameMode<AARLGameModeBase>();
+				if (GM)
+				{
+					GM->OnActorKilled(GetOwner(), InstigatorActor);
+				}
+			}
 		}
 	}
-	return true;
+	return ActualDelta != 0.0f;
 }
 
 bool UARLAttributeComponent::ApplyRageChange(float Delta, AActor* InstigatorActor)
 {
 	float OldRage = CurrentRage;
-	CurrentRage = FMath::Clamp(CurrentRage + Delta, 0, MaxRage);
-	float ActualDelta = CurrentRage - OldRage;
-
-	if (ActualDelta != 0.0f)
+	float NewRage = FMath::Clamp(CurrentRage + Delta, 0, MaxRage);
+	float ActualDelta = NewRage - OldRage;
+	if (GetOwner()->HasAuthority())
 	{
-		MulticastRageChanged(InstigatorActor, CurrentRage, ActualDelta);
+		CurrentRage = NewRage;
+		if (ActualDelta != 0.0f)
+		{
+			MulticastRageChanged(InstigatorActor, CurrentRage, ActualDelta);
+		}
 	}
-	return true;
+	return ActualDelta != 0.0f;
 }
 
 bool UARLAttributeComponent::Kill(AActor* Instigator)
