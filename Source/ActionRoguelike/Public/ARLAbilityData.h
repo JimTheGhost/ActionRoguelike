@@ -11,20 +11,22 @@ struct FARLAbilityData : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName AbilityName;
+	FName AbilityName = "None";
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName SpawnSocket;
+	FName SpawnSocket = "None";
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UClass* AbilityClass;
+	UClass* AbilityClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* AbilityAnim;
+	UAnimMontage* AbilityAnim = nullptr;
+;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AttackTiming = 0.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UParticleSystem* CastEmitter;
+	UParticleSystem* CastEmitter = nullptr;
+;
 };

@@ -5,19 +5,33 @@
 
 #include "ARLAttributeComponent.h"
 #include "ARLCharacter.h"
+#include "ARLGameplayInterface.h"
+#include "ARLSaveGame.h"
 #include "EngineUtils.h"
 #include "AI/ARLAICharacter.h"
-#include "Components/ArrowComponent.h"
-#include "DSP/BufferDiagnostics.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
+#include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/ARLPlayerState.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("arl.SpawnBots"), true, TEXT("Set bot spawner to active (1) or inactive (0)"), ECVF_Cheat);
 
 AARLGameModeBase::AARLGameModeBase()
 {
 	SpawnInterval = 2.0f;
+	CreditsPerKill = 10;
+	
+	SlotName = "SaveGame01";
 }
+
+void AARLGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+	
+	LoadSaveGame();
+}
+
 void AARLGameModeBase::StartPlay()
 {
 	Super::StartPlay();
@@ -28,6 +42,17 @@ void AARLGameModeBase::StartPlay()
 	if (ensure(QueryInstance))
 	{
 		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &AARLGameModeBase::OnPowerUpQueryCompleted);
+	}
+}
+
+void AARLGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+	
+	AARLPlayerState* PS = NewPlayer->GetPlayerState<AARLPlayerState>();
+	if (PS)
+	{
+		PS->LoadPlayerState(CurrentSaveGame);
 	}
 }
 
@@ -44,7 +69,6 @@ void AARLGameModeBase::KillAllBots()
 		}
 	}
 }
-
 
 void AARLGameModeBase::SpawnBotTimerElapsed()
 {
@@ -171,9 +195,101 @@ void AARLGameModeBase::OnActorKilled(AActor* Victim, AActor* Killer)
 		float RespawnDelay = 2.0f;
 		GetWorldTimerManager().SetTimer(RespawnTimerHandle, TimerDelegate, RespawnDelay, false);
 	}
-	if (AARLCharacter* Player = Cast<AARLCharacter>(Killer))
-	{
-		Cast<AARLPlayerState>(Player->GetPlayerState())->UpdateCredits(10);
-	}
 	UE_LOG(LogTemp, Log, TEXT("%s Killed by %s"), *GetNameSafe(Victim), *GetNameSafe(Killer));
+	if (APawn* KillerPawn = Cast<APawn>(Killer))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found Pawn %s"), *GetNameSafe(Killer));
+		if (AARLPlayerState* PlayerState = Cast<AARLPlayerState>(KillerPawn->GetPlayerState()))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Found PlayerState %s"), *GetNameSafe(PlayerState));
+			PlayerState->UpdateCredits(CreditsPerKill);
+		}
+	}
 }
+
+void AARLGameModeBase::WriteSaveGame()
+{
+	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++)
+	{
+		AARLPlayerState* PlayerState = Cast<AARLPlayerState>(GameState->PlayerArray[i]);
+		if (PlayerState)
+		{
+			PlayerState->SavePlayerState(CurrentSaveGame);
+		}
+	}
+	
+	CurrentSaveGame->SavedActors.Empty();
+	
+	//iterate over entire worlds actors
+	for (FActorIterator It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+		//only concerned with 'Gameplay actors'
+		if (!Actor->Implements<UARLGameplayInterface>())
+		{
+			continue;
+		}
+		
+		UE_LOG(LogTemp, Log, TEXT("Attempting Save on %s"), *GetNameSafe(Actor))
+		FActorSaveData ActorData;
+		ActorData.ActorName = Actor->GetName();
+		ActorData.ActorTransform = Actor->GetActorTransform();
+		
+		FMemoryWriter MemWriter(ActorData.ByteData);
+		FObjectAndNameAsStringProxyArchive Archive(MemWriter,true);
+		Archive.ArIsSaveGame = true;
+		
+		Actor->Serialize(Archive);
+		
+		CurrentSaveGame->SavedActors.Add(ActorData);
+	}
+	
+	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+}
+
+void AARLGameModeBase::LoadSaveGame()
+{
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	{
+		CurrentSaveGame = Cast<UARLSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		if (CurrentSaveGame == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame data."));
+		}
+		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame data."))
+		
+		for (FActorIterator It(GetWorld()); It; ++It)
+		{
+			AActor* Actor = *It;
+			//only concerned with 'Gameplay actors'
+			if (!Actor->Implements<UARLGameplayInterface>())
+			{
+				continue;
+			}
+			
+			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
+			{
+				if (ActorData.ActorName == Actor->GetName())
+				{
+					Actor->SetActorTransform(ActorData.ActorTransform);
+					
+					FMemoryReader MemReader(ActorData.ByteData);
+					FObjectAndNameAsStringProxyArchive Archive(MemReader,true);
+					Archive.ArIsSaveGame = true;
+		
+					Actor->Serialize(Archive);
+					
+					IARLGameplayInterface::Execute_OnActorLoaded(Actor);
+					break;
+				}
+			}
+		}
+	} 
+	else
+	{
+		CurrentSaveGame = Cast<UARLSaveGame>(UGameplayStatics::CreateSaveGameObject(UARLSaveGame::StaticClass()));
+		
+		UE_LOG(LogTemp, Log, TEXT("Created new SaveGame data."))
+	}
+}
+

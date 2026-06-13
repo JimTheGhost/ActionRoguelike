@@ -2,6 +2,8 @@
 
 
 #include "ARLItemChest.h"
+
+#include "ActionRoguelike/ActionRoguelike.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -25,6 +27,12 @@ void AARLItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
 	bLidOpen = !bLidOpen;
 	OnRep_ToggleChest();
+}
+
+void AARLItemChest::OnActorLoaded_Implementation()
+{
+	OnRep_ToggleChest();
+	LogOnScreen(this,"Attempting Load");
 }
 
 void AARLItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

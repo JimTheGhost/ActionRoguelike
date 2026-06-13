@@ -3,6 +3,8 @@
 
 #include "ARLPickUpBase.h"
 
+#include "Net/UnrealNetwork.h"
+
 // Sets default values
 AARLPickUpBase::AARLPickUpBase()
 {
@@ -14,39 +16,44 @@ AARLPickUpBase::AARLPickUpBase()
 
 	RespawnDelay = 10.0f;
 	bRespawnable = true;
+	bIsActive = true;
 
 	SetReplicates(true);
 }
 
 void AARLPickUpBase::DisablePickup(bool bRespawn)
 {
-	BaseMesh->SetVisibility(false);
-	SetActorEnableCollision(false);
-	if (bRespawn && HasAuthority())
-	{
-		GetWorldTimerManager().SetTimer(RespawnTimerHandle,this,&AARLPickUpBase::EnablePickupMulticast,RespawnDelay);
-	}
+	SetPickupState(false);
+
+	GetWorldTimerManager().SetTimer(RespawnTimerHandle,this,&AARLPickUpBase::EnablePickup,RespawnDelay);
 }
 
 void AARLPickUpBase::EnablePickup()
 {
-	BaseMesh->SetVisibility(true);
-	SetActorEnableCollision(true);
+	SetPickupState(true);
+}
+
+void AARLPickUpBase::SetPickupState(bool bNewState)
+{
+	bIsActive = bNewState;
+	OnRep_IsActive();
 }
 
 void AARLPickUpBase::Interact_Implementation(APawn* InstigatorPawn)
 {
 	IARLGameplayInterface::Interact_Implementation(InstigatorPawn);
-	DisablePickupMulticast(bRespawnable);
+	DisablePickup(bRespawnable);
 }
 
-void AARLPickUpBase::DisablePickupMulticast_Implementation(bool bRespawn)
+void AARLPickUpBase::OnRep_IsActive()
 {
-	DisablePickup(bRespawn);
+	BaseMesh->SetVisibility(bIsActive,true);
+	SetActorEnableCollision(bIsActive);
 }
-
-void AARLPickUpBase::EnablePickupMulticast_Implementation()
+	
+void AARLPickUpBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	EnablePickup();
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(AARLPickUpBase, bIsActive);
 }
-

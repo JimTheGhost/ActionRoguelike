@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "ARLPlayerState.generated.h"
 
+class UARLSaveGame;
 /**
  * 
  */
@@ -17,7 +18,7 @@ class ACTIONROGUELIKE_API AARLPlayerState : public APlayerState
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditDefaultsOnly, Replicated, BlueprintReadWrite, Category = "Inventory|Currency")
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing="OnRep_Credits", BlueprintReadWrite, Category = "Inventory|Currency")
 	int32 Credits;
 	
 	public:
@@ -30,6 +31,14 @@ protected:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnCreditsChanged OnCreditsChanged;
 	
-	UFUNCTION(NetMulticast, Unreliable)
-	void OnCreditsChangedMulticast(AARLPlayerState* PlayerState, int32 NewCredits, int32 Delta);
+	UFUNCTION(BlueprintNativeEvent, Category = "Save Game")
+	void SavePlayerState(UARLSaveGame* SaveGameObject);
+	UFUNCTION(BlueprintNativeEvent, Category = "Save Game")
+	void LoadPlayerState(UARLSaveGame* SaveGameObject);
+	
+	UFUNCTION()
+	void OnRep_Credits(int32 OldCredits);
+	
+	//UFUNCTION(NetMulticast, Unreliable)
+	//void OnCreditsChangedMulticast(AARLPlayerState* PlayerState, int32 NewCredits, int32 Delta);
 };

@@ -9,6 +9,7 @@
 #include "ARLGameModeBase.generated.h"
 
 class AARLAICharacter;
+class UARLSaveGame;
 /**
  * 
  */
@@ -21,7 +22,11 @@ public:
 	
 protected:
 	FTimerHandle SpawnBotTimer;
-
+	
+	FString SlotName;
+	UPROPERTY()
+	UARLSaveGame* CurrentSaveGame;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnInterval;
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -57,8 +62,17 @@ protected:
 public:
 	virtual void OnActorKilled(AActor* Victim, AActor* Killer);
 	
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	
 	virtual void StartPlay() override;
 
+	void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+	
 	UFUNCTION(Exec, Category = "Cheats")
 	void KillAllBots();
+	
+	UFUNCTION(BlueprintCallable, Category = "Save Game")
+	void WriteSaveGame();
+	
+	void LoadSaveGame();
 };

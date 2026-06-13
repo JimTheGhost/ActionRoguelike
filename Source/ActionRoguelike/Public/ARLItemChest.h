@@ -14,6 +14,7 @@ class ACTIONROGUELIKE_API AARLItemChest : public AActor, public IARLGameplayInte
 {
 	GENERATED_BODY()
 	void Interact_Implementation(APawn* InstigatorPawn);
+	void OnActorLoaded_Implementation();
 	
 public:	
 	// Sets default values for this actor's properties
@@ -22,7 +23,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Lid Mechanism")
 	float TargetPitch;
 protected:
-	UPROPERTY(ReplicatedUsing="OnRep_ToggleChest", BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing="OnRep_ToggleChest", BlueprintReadOnly, SaveGame)
 	bool bLidOpen;
 	
 	UFUNCTION()

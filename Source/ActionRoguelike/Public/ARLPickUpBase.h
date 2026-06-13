@@ -17,6 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	AARLPickUpBase();
 
+protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	UStaticMeshComponent* BaseMesh;
 
@@ -24,17 +25,24 @@ public:
 	float RespawnDelay;
 	UPROPERTY(EditAnywhere, Category = "Attributes|Lifetime")
 	bool bRespawnable;
+	
+	UPROPERTY(ReplicatedUsing="OnRep_IsActive")
+	bool bIsActive;
 
 	FTimerHandle RespawnTimerHandle;
 
-	virtual void DisablePickup(bool bRespawn);
-	virtual void EnablePickup();
+	void SetPickupState(bool bNewState);
 	
-	virtual void Interact_Implementation(APawn* InstigatorPawn);
+	UFUNCTION()
+	void EnablePickup();
+	
+	void DisablePickup(bool bRespawn);
+
+public:
+	
+	void Interact_Implementation(APawn* InstigatorPawn) override;
 	
 protected:
-	UFUNCTION(NetMulticast, Unreliable)
-	void DisablePickupMulticast(bool bRespawn);
-	UFUNCTION(NetMulticast, Unreliable)
-	void EnablePickupMulticast();
+	UFUNCTION()
+	void OnRep_IsActive();
 };

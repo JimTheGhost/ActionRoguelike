@@ -41,6 +41,9 @@ class ACTIONROGUELIKE_API UInputActionConfig : public UDataAsset
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	UInputAction* ParryAction;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	UInputAction* PauseAction;
 
 
 };

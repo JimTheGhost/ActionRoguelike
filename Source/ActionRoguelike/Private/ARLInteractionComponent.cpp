@@ -8,7 +8,7 @@
 #include "ARLWorldUserWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-static TAutoConsoleVariable<bool> CVarEnableInteractDebug(TEXT("arl.InteractDebug"), true, TEXT("Enable or Disable debug shapes for interaction"));
+static TAutoConsoleVariable<bool> CVarEnableInteractDebug(TEXT("arl.InteractDebug"), false, TEXT("Enable or Disable debug shapes for interaction"));
 
 // Sets default values for this component's properties
 UARLInteractionComponent::UARLInteractionComponent()

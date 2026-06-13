@@ -37,7 +37,7 @@ void AARLMagicProjectile::ProjectileOverlapDelegate(UPrimitiveComponent* Overlap
 		{
 			Explode();
 			
-			if (ActionComponent && HasAuthority())
+			if (ActionComponent && OnHitEffect && HasAuthority())
 			{
 				ActionComponent->AddAction(GetInstigator(), OnHitEffect);
 			}
