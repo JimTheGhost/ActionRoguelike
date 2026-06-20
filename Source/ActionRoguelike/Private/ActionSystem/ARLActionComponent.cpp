@@ -8,6 +8,8 @@
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
 
+static TAutoConsoleVariable<bool> CVarEnableActionOverview(TEXT("arl.ActionOverview"), false, TEXT("Enable or Disable action overview"));
+
 UARLActionComponent::UARLActionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -159,16 +161,19 @@ void UARLActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 	//FString DebugString = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
 	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Cyan, DebugString);
-	
-	for (UARLAction* Action : Actions)
+	if (CVarEnableActionOverview.GetValueOnGameThread())
 	{
-		FColor TextColor = Action->IsRunning()? FColor::Blue : FColor::White;
-		
-		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"), 
-			*GetNameSafe(GetOwner()), 
-			*GetNameSafe(Action));
-		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
+			for (UARLAction* Action : Actions)
+        	{
+        		FColor TextColor = Action->IsRunning()? FColor::Blue : FColor::White;
+        		
+        		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"), 
+        			*GetNameSafe(GetOwner()), 
+        			*GetNameSafe(Action));
+        		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
+        	}
 	}
+
 }
 
 void UARLActionComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

@@ -9,6 +9,7 @@
 
 class UARLAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionStateChanged, UARLActionComponent*, OwningComp, UARLAction*, Action);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROGUELIKE_API UARLActionComponent : public UActorComponent
@@ -35,6 +36,11 @@ public:
 	bool StopActionByName(AActor* Instigator, FName ActionName);
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	bool DoesActionExist(TSubclassOf<UARLAction> ActionClass);
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStarted;
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStopped;
 
 
 protected:
@@ -45,7 +51,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<UARLAction>> DefaultActions;
 	
-	UPROPERTY(Replicated)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	TArray<UARLAction*> Actions;
 	
 	// Called when the game starts

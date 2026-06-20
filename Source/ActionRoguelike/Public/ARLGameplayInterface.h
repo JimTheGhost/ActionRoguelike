@@ -27,4 +27,7 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Interact(APawn* InstigatorPawn);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FText GetInteractText(APawn* InstigatorPawn);
 };

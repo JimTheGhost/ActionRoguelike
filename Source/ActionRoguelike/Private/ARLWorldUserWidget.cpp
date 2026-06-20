@@ -11,6 +11,11 @@ void UARLWorldUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
+	if (!AttachedActor)
+	{
+		RemoveFromParent();
+		return;
+	}
 	FVector2D ScreenPosition;
 	if (UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(),AttachedActor->GetActorLocation()+Offset,ScreenPosition))
 	{

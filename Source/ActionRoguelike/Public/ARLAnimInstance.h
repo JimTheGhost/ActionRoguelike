@@ -9,9 +9,21 @@
 /**
  * 
  */
+class UARLActionComponent;
 UCLASS()
 class ACTIONROGUELIKE_API UARLAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+	 
+	protected:
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Status")
+	bool IsStunned;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Owner")
+	UARLActionComponent* ActionComp;
+	
+	void NativeInitializeAnimation() override;
+	
+	void NativeUpdateAnimation(float DeltaSeconds) override;
 };

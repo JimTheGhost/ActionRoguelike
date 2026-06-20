@@ -45,6 +45,11 @@ void AARLPickUpBase::Interact_Implementation(APawn* InstigatorPawn)
 	DisablePickup(bRespawnable);
 }
 
+FText AARLPickUpBase::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 void AARLPickUpBase::OnRep_IsActive()
 {
 	BaseMesh->SetVisibility(bIsActive,true);

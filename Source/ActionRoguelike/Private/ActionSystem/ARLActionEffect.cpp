@@ -3,6 +3,7 @@
 
 #include "ActionSystem/ARLActionEffect.h"
 #include "ActionSystem/ARLActionComponent.h"
+#include "GameFramework/GameStateBase.h"
 
 UARLActionEffect::UARLActionEffect()
 {
@@ -45,6 +46,18 @@ void UARLActionEffect::StopAction_Implementation(AActor* Instigator)
 	{
 		ActionComp->RemoveAction(this);
 	}
+}
+
+float UARLActionEffect::GetTimeRemaining() const
+{
+	AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>();
+	if (GS)
+	{
+			float EndTime = TimeStarted + Duration;
+        	return EndTime - GS->GetServerWorldTimeSeconds();
+	}
+
+	return Duration;
 }
 
 void UARLActionEffect::ExecutePeriodicEffect_Implementation(AActor* Instigator)

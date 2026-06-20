@@ -72,6 +72,10 @@ void AARLCharacter::BeginPlay()
 
 void AARLCharacter::Move2D(const FInputActionValue& Value)
 {
+	if (ActionComp->ActiveGameplayTags.HasTag(FGameplayTag::RequestGameplayTag("Status.Stunned")))
+	{
+		return;
+	}
 	const FRotator YawControlRotator = FRotator(0,GetControlRotation().Yaw,0);
 	const FVector MoveDir = YawControlRotator.RotateVector(FVector(Value.Get<FVector2D>(),0));
 	AddMovementInput(MoveDir,1,false);

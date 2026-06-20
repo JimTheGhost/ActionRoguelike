@@ -42,6 +42,8 @@ public:
 	
 	void Interact_Implementation(APawn* InstigatorPawn) override;
 	
+	FText GetInteractText_Implementation(APawn* InstigatorPawn);
+	
 protected:
 	UFUNCTION()
 	void OnRep_IsActive();

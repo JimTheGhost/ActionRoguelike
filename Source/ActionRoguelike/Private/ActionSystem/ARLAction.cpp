@@ -27,6 +27,13 @@ void UARLAction::StartAction_Implementation(AActor* Instigator)
 
 	RepData.bIsRunning = true;
 	RepData.Instigator = Instigator;
+	
+	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
+	{
+		TimeStarted = GetWorld()->TimeSeconds;
+	}
+	
+	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(),this);
 }
 
 void UARLAction::StopAction_Implementation(AActor* Instigator)
@@ -38,6 +45,8 @@ void UARLAction::StopAction_Implementation(AActor* Instigator)
 
 	RepData.bIsRunning = false;
 	RepData.Instigator = Instigator;
+	
+	GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(),this);
 }
 
 UARLActionComponent* UARLAction::GetOwningComponent() const
@@ -100,5 +109,6 @@ void UARLAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(UARLAction, RepData);
-	DOREPLIFETIME(UARLAction, ActionComp)
+	DOREPLIFETIME(UARLAction, ActionComp);
+	DOREPLIFETIME(UARLAction, TimeStarted);
 }

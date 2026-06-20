@@ -18,6 +18,8 @@ public:
 	AARLHealthPotion();
 	//called with interact message
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+	
+	FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	float HealAmount;

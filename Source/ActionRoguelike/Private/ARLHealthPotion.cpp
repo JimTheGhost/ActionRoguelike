@@ -40,3 +40,14 @@ void AARLHealthPotion::Interact_Implementation(APawn* InstigatorPawn)
 		}
 	}
 }
+
+FText AARLHealthPotion::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	UARLAttributeComponent* AttributeComp = UARLAttributeComponent::GetAttributes(InstigatorPawn);
+	if (AttributeComp && AttributeComp->IsFullHealth())
+	{
+		return NSLOCTEXT("Interactables", "HealthPotion_FullHealthWarning", "Health is Full");
+	}
+	
+	return FText::Format(NSLOCTEXT("Interactables", "HealthPotion_InteractMessage", "Cost {0} Credits"), CreditCost);
+}
